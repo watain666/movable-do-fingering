@@ -1,42 +1,61 @@
 # Movable Do Fingering
 
-<img align=right src="./MovableDoFingering.png" width=220px />
+[English](./README.md) | [繁體中文（台灣）](./README.zh-TW.md)
 
-> This is a [MuseScore](http://musescore.org/) plugin modified from [nozomu-y/MovableDo](https://github.com/nozomu-y/MovableDo), made to work with MuseScore 3 and 4.
-> 
-> ⚠️ **This branch works only on MuseScore 4.4 and above. If you use MuseScore ≤4.3, check the `main` branch.**
+<img align="right" src="./MovableDoFingering.png" width="220" />
 
-When we play Piano, we usually read notes as C, D, E... and we also call them Do, Re, Mi... when try to sing the notes. However, in some circumstances, for example in some chorus, the name Do is not always mapped to C. Instead, it can be mapped to any note based on the tonality. For example, in E♭-major or c-minor tonality, Do is mappped to E♭, and La is mapped to C.
+Movable Do Fingering is a [MuseScore](https://musescore.org/) plugin based on [nozomu-y/MovableDo](https://github.com/nozomu-y/MovableDo).  
+It adds movable-do note names as **fingering texts** (not staff text), so you can quickly annotate scores with Do/Re/Mi (or other notation styles) by tonality.
 
-This plugin is similar to the built-in note-names plugin. Instead of the ABC names, it adds DoReMi note names **as fingering texts** based on a given tonality. You can change the appearance of fingering texts in Styles.
+> ⚠️ **This branch supports MuseScore 4.4 and above only.**  
+> If you use MuseScore 4.3 or earlier, use the `main` branch.
+
+## Features
+
+- Adds movable-do names as fingering text.
+- Supports four notation styles:
+  - `Letters-vowel` (`Do -> d`, `♯Do -> di`, `♭Ti -> ta`)
+  - `Letters` (`Do -> d`, `♯Do -> ♯d`, `♭Ti -> ♭t`)
+  - `Numeric` (`Do -> 1`, `Re -> 2`, accidentals preserved)
+  - `Solfege (Do Re Mi)` (`Do`, `Re`, `Mi`, ...)
+- Supports placement above or below staff.
+- Supports display mode:
+  - `All Notes`
+  - `Unison Only` (only labels notes that are in unison with other staves, and appends part names in parentheses)
+- Automatically suggests tonality from current key signature when opening the dialog.
+- Remembers notation, placement, and display mode preferences.
 
 ![Example score using the plugin](readme-assets/example-score.png)
 
 ## Installation
 
-1. Download the code and unzip it under the user's `Plugins` directory (check MuseScore preferences if you don't know where).
-2. Restart MuseScore, and you should be able to activate the plugin in the plugin manager.
+1. Download this repository as ZIP (or clone it).
+2. Place the files in your MuseScore user `Plugins` folder.
+3. Restart MuseScore.
+4. Open **Plugins Manager** and enable **Movable Do Fingering**.
 
 ## Usage
 
-The process of adding texts is not automatic. You need to run this plugin from the Plugin menu. In MuseScore 4, it is located in the Composing/Arranging Tools submenu. A prompt dialog will pop up.
+Run from **Plugins → Composing/Arranging Tools → Movable Do Fingering**.
 
-<img alt="Dialog" src="readme-assets/dialog.png" width=300 />
+<img alt="Dialog" src="readme-assets/dialog.png" width="300" />
 
-Click `OK` to apply the texts. Note that this won't remove existing note name texts, so make sure to delete them before applying new ones.
+1. Choose **Tonality**, **Notation**, **Placement**, and **Display Mode**.
+2. Click **OK** to insert labels.
 
-Notes on notation styles:
+Behavior notes:
 
-- **`Letters-vowel`** Use the leading letter of the note name (`Do -> d` `Re -> r`). Include the alternative vowel if the note name contains an accidental (`♯Do -> di` `♭Ti -> ta`).
-- **`Letters`** Use the leading letter of the note name (`Do -> d` `Re -> r`) and write the accidentals as-is (`♯Do -> ♯d` `♭Ti -> ♭t`). Recommended for regions that do not use alternative vowels to indicate accidentals.
-- **`Numeric`** Use numbers `1, 2, 3...` instead of names `Do, Re, Mi...` and write accidentals as-is. Recommended for regions where Numbered Music Notation (a.k.a. JianPu in Chinese) is commonly used.
+- If you select a **range**, only that range is processed.
+- Without a range selection, the plugin processes the whole score.
+- Existing fingering labels are not removed automatically.
 
 ## Changes compared to nozomu-y/MovableDo
 
-- Made to work with MuseScore 4.4 and above, with consistent UI styling.
-- Translated text to English.
-- Added Letters and Numeric notation styles.
-- Reorganized the tonality menu for better readability.
-- When the plugin is run, it will also try to infer the tonality from the score.
-- The plugin will now persist the preferred notation format of the note names.
-- The note names are now added as **fingering texts** instead of staff texts. This is based on the fact that Movable Do note names are rarely used in circumstances that need fingering texts. Utilizing fingering texts also makes it easier to delete all existing note names and reapply them.
+- Updated for MuseScore 4.4+ dialog/plugin metadata.
+- UI text translated and refined in English.
+- Added `Letters`, `Numeric`, and `Solfege` notation styles.
+- Reorganized tonality menu for readability.
+- Added key-signature-based tonality suggestion.
+- Added persistent dialog settings.
+- Uses **fingering text** output instead of staff text.
+- Added unison detection mode with part-name suffixes.
