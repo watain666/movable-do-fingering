@@ -18,7 +18,7 @@ import Muse.UiComponents 1.0
 
 MuseScore {
     version: "1.5"
-    description: "Inserts movable do note names with unison filtering and custom part names"
+    description: "Inserts movable do note names with smart unison suffix handling"
     menuPath: "Plugins.Movable Do Fingering"
     pluginType: "dialog"
 
@@ -34,6 +34,7 @@ MuseScore {
 
     property real fontSizeMini: 0.7
     property real elementType: Element.FINGERING
+    property real dialogControlWidth: 150
 
     function getUnisonPartNames(note, segment, currentTrack) {
         var unisonParts = [];
@@ -75,7 +76,7 @@ MuseScore {
         return unisonParts;
     }
 
-    function nameChord(notes, text, small, movableDoOffset, notationIndex, placementIndex, segment, displayModeIndex, currentTrack) {
+    function nameChord(notes, text, small, movableDoOffset, notationIndex, placementIndex, segment, displayModeIndex, unisonLabelPositionIndex, currentTrack, trackState) {
         var tpcToTonalPitch= {
             "31": "A##", "19": "B", "7":  "Cb", "24": "A#", "12": "Bb", "0":  "Cbb",
             "29": "G##", "17": "A", "5":  "Bbb", "22": "G#", "10": "Ab", "27": "F##",
@@ -112,8 +113,10 @@ MuseScore {
             
             var unisonParts = getUnisonPartNames(notes[i], segment, currentTrack);
             var isUnison = unisonParts.length > 0;
+            var currentUnisonStr = unisonParts.join(", ");
 
             if (displayModeIndex === 1 && !isUnison) {
+                trackState.lastUnison = "";
                 continue;
             }
 
@@ -122,23 +125,39 @@ MuseScore {
             if (typeof notes[i].tpc === "undefined") return
             var tonalPitch = tpcToTonalPitch[String((parseInt(notes[i].tpc) - movableDoOffset + 35 + 1) % 35 - 1)]
             name = tonalPitchToMovableDo[tonalPitch][notationIndex]
-            if (notes[i].tieBack !== null) continue
-
-            var suffix = "";
-            if (isUnison) {
-                suffix = " (" + unisonParts.join(", ") + ")";
+            if (notes[i].tieBack !== null) {
+                continue; 
             }
 
-            text.text = name + suffix + oct + text.text
+            var partLabel = "";
+            if (isUnison) {
+                if (currentUnisonStr !== trackState.lastUnison) {
+                    partLabel = "(" + currentUnisonStr + ")";
+                }
+                trackState.lastUnison = currentUnisonStr;
+            } else {
+                trackState.lastUnison = "";
+            }
+
+            var renderedText = name + oct;
+            if (partLabel !== "") {
+                if (unisonLabelPositionIndex === 0) {
+                    renderedText = partLabel + "\n" + renderedText;
+                } else {
+                    renderedText = renderedText + "\n" + partLabel;
+                }
+            }
+
+            text.text = renderedText + text.text
         }
         text.placement = (placementIndex === 0) ? Placement.ABOVE : Placement.BELOW;
     }
 
-    function renderGraceNoteNames(cursor, list, text, small, movableDoOffset, notationIndex, placementIndex, segment, displayModeIndex, currentTrack) {
+    function renderGraceNoteNames(cursor, list, text, small, movableDoOffset, notationIndex, placementIndex, segment, displayModeIndex, unisonLabelPositionIndex, currentTrack, trackState) {
         if (list.length > 0) {
             for (var chordNum = 0; chordNum < list.length; chordNum++) {
                 var chord = list[chordNum]
-                nameChord(chord.notes, text, small, movableDoOffset, notationIndex, placementIndex, segment, displayModeIndex, currentTrack)
+                nameChord(chord.notes, text, small, movableDoOffset, notationIndex, placementIndex, segment, displayModeIndex, unisonLabelPositionIndex, currentTrack, trackState)
                 if (text.text) cursor.add(text)
                 text.offsetX = chord.posX
                 if (text.text) text = newElement(elementType)
@@ -147,7 +166,7 @@ MuseScore {
         return text
     }
 
-    function nameNotesMovableDo(tonalityText, notationIndex, placementIndex, displayModeIndex) {
+    function nameNotesMovableDo(tonalityText, notationIndex, placementIndex, displayModeIndex, unisonLabelPositionIndex) {
         var movableDoOffset = +tonalityText.split(' ')[0]
         var cursor = curScore.newCursor()
         var startStaff, endStaff, endTick
@@ -170,6 +189,9 @@ MuseScore {
                 cursor.voice = voice
                 cursor.staffIdx = staff
                 var currentTrack = staff * 4 + voice;
+                
+                var trackState = { lastUnison: "" };
+
                 if (fullScore) cursor.rewind(0)
          
                 while (cursor.segment && (fullScore || cursor.tick < endTick)) {
@@ -188,11 +210,11 @@ MuseScore {
                             }
                         }
 
-                        text = renderGraceNoteNames(cursor, leadingLifo, text, true, movableDoOffset, notationIndex, placementIndex, cursor.segment, displayModeIndex, currentTrack)
-                        nameChord(cursor.element.notes, text, false, movableDoOffset, notationIndex, placementIndex, cursor.segment, displayModeIndex, currentTrack)
+                        text = renderGraceNoteNames(cursor, leadingLifo, text, true, movableDoOffset, notationIndex, placementIndex, cursor.segment, displayModeIndex, unisonLabelPositionIndex, currentTrack, trackState)
+                        nameChord(cursor.element.notes, text, false, movableDoOffset, notationIndex, placementIndex, cursor.segment, displayModeIndex, unisonLabelPositionIndex, currentTrack, trackState)
                         if (text.text) cursor.add(text)
                         if (text.text) text = newElement(elementType)
-                        text = renderGraceNoteNames(cursor, trailingFifo, text, true, movableDoOffset, notationIndex, placementIndex, cursor.segment, displayModeIndex, currentTrack)
+                        text = renderGraceNoteNames(cursor, trailingFifo, text, true, movableDoOffset, notationIndex, placementIndex, cursor.segment, displayModeIndex, unisonLabelPositionIndex, currentTrack, trackState)
                     }
                     cursor.next()
                 }
@@ -240,7 +262,7 @@ MuseScore {
             Column {
                 id: grid
                 spacing: 16
-                width: 220
+                width: dialogControlWidth
                 anchors.fill: parent
                 anchors.margins: 16
                 
@@ -249,6 +271,7 @@ MuseScore {
                     StyledTextLabel { text: qsTr('Tonality') }
                     StyledDropdown {
                         id: tonality
+                        width: dialogControlWidth
                         model: ["+7 C♯/a♯", "+6 F♯/d♯", "+5 B/g♯", "+4 E/c♯", "+3 A/f♯", "+2 D/b", "+1 G/e", "0 C/a", "-1 F/d", "-2 B♭/g", "-3 E♭/c", "-4 A♭/f", "-5 D♭/b♭", "-6 G♭/e♭", "-7 C♭/a♭"]
                         currentIndex: 7
                         onActivated: function(index, value) { currentIndex = index }
@@ -260,6 +283,7 @@ MuseScore {
                     StyledTextLabel { text: qsTr('Notation') }
                     StyledDropdown {
                         id: notation
+                        width: dialogControlWidth
                         model: ["Letters-vowel", "Letters", "Numeric", "Solfege (Do Re Mi)"]
                         currentIndex: 3
                         onActivated: function(index, value) { currentIndex = index }
@@ -271,6 +295,7 @@ MuseScore {
                     StyledTextLabel { text: qsTr('Placement') }
                     StyledDropdown {
                         id: placementDir
+                        width: dialogControlWidth
                         model: ["Above Staff", "Below Staff"]
                         currentIndex: 1 
                         onActivated: function(index, value) { currentIndex = index }
@@ -282,18 +307,32 @@ MuseScore {
                     StyledTextLabel { text: qsTr('Display Mode') }
                     StyledDropdown {
                         id: displayMode
+                        width: dialogControlWidth
                         model: ["All Notes", "Unison Only"]
                         currentIndex: 0
                         onActivated: function(index, value) { currentIndex = index }
                     }
                 }
 
+                Column {
+                    spacing: 6
+                    StyledTextLabel { text: qsTr('Unison Label Position') }
+                    StyledDropdown {
+                        id: unisonLabelPosition
+                        width: dialogControlWidth
+                        model: ["Above Note Name", "Below Note Name"]
+                        currentIndex: 1
+                        onActivated: function(index, value) { currentIndex = index }
+                    }
+                }
+
                 FlatButton {
                     id: button
+                    width: dialogControlWidth
                     text: qsTr("OK")
                     onClicked: {
                         curScore.startCmd()
-                        nameNotesMovableDo(tonality.currentText, notation.currentIndex, placementDir.currentIndex, displayMode.currentIndex)
+                        nameNotesMovableDo(tonality.currentText, notation.currentIndex, placementDir.currentIndex, displayMode.currentIndex, unisonLabelPosition.currentIndex)
                         curScore.endCmd()
                         _quit()
                     }
@@ -308,5 +347,6 @@ MuseScore {
         property alias notation: notation.currentIndex
         property alias placement: placementDir.currentIndex
         property alias displayMode: displayMode.currentIndex
+        property alias unisonLabelPosition: unisonLabelPosition.currentIndex
     }
 }

@@ -22,6 +22,9 @@ It adds movable-do note names as **fingering texts** (not staff text), so you ca
 - Supports display mode:
   - `All Notes`
   - `Unison Only` (only labels notes that are in unison with other staves, and appends part names in parentheses)
+- In `Unison Only`, supports unison part-label position:
+  - `Above Note Name`
+  - `Below Note Name`
 - Automatically suggests tonality from current key signature when opening the dialog.
 - Remembers notation, placement, and display mode preferences.
 
@@ -40,7 +43,7 @@ Run from **Plugins → Composing/Arranging Tools → Movable Do Fingering**.
 
 <img alt="Dialog" src="readme-assets/dialog.png" width="300" />
 
-1. Choose **Tonality**, **Notation**, **Placement**, and **Display Mode**.
+1. Choose **Tonality**, **Notation**, **Placement**, **Display Mode**, and **Unison Label Position**.
 2. Click **OK** to insert labels.
 
 Behavior notes:

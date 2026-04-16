@@ -22,6 +22,9 @@ Movable Do Fingering 是一個 [MuseScore](https://musescore.org/) 外掛，基�
 - 支援顯示模式：
   - `All Notes`（全部音符）
   - `Unison Only`（只顯示與其他譜表同音高的音，並在後面附上聲部名稱）
+- 在 `Unison Only` 下，可設定同音聲部註記位置：
+  - `Above Note Name`（顯示在音名上方）
+  - `Below Note Name`（顯示在音名下方）
 - 開啟對話框時，會依目前調號自動推測調性。
 - 會記住你上次使用的記譜樣式、位置與顯示模式。
 
@@ -40,7 +43,7 @@ Movable Do Fingering 是一個 [MuseScore](https://musescore.org/) 外掛，基�
 
 <img alt="對話框畫面" src="readme-assets/dialog.png" width="300" />
 
-1. 設定 **Tonality**、**Notation**、**Placement**、**Display Mode**。
+1. 設定 **Tonality**、**Notation**、**Placement**、**Display Mode**、**Unison Label Position**。
 2. 按下 **OK** 套用。
 
 行為說明：
